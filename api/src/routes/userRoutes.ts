@@ -10,4 +10,10 @@ export const userRoutes = {
   "/users": {
     GET: userController.getUsers,
   },
+  "/forgot-password": {
+    POST: userController.sendPasswordRecovery,
+  },
+  "/reset-password": {
+    POST: userController.resetPassword,
+  },
 };

@@ -1,20 +1,31 @@
 import { userRoutes } from "./routes/userRoutes";
 import AuthorizationMiddleware from "./middlewares/authorization";
 
+const CORSHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers": "*",
+};
+
 const routes: Record<string, Record<string, Function>> = {
   ...userRoutes,
 };
 
 const server = Bun.serve({
-  port: 3030,
+  port: process.env.API_PORT,
   async fetch(req) {
     const url = new URL(req.url);
     const pathname = url.pathname;
     const method = req.method.toUpperCase();
+    console.log("Method: ", method);
+    if (method == "OPTIONS") {
+      return new Response("Ok", { headers: { ...CORSHeaders } });
+    }
     const routeHandler = routes[pathname];
+    console.log("routeHandler: ", routeHandler);
 
     if (routeHandler) {
-      if (!["/login", "/register"].includes(pathname)) {
+      if (!["/login", "/register", "/forgot-password"].includes(pathname)) {
         const auth = AuthorizationMiddleware(req);
         if (auth?.status != 200) {
           return new Response(
@@ -22,15 +33,23 @@ const server = Bun.serve({
               error: auth.message,
             }),
             {
+              headers: { ...CORSHeaders },
               status: auth.status,
             },
           );
         }
       }
-      return routeHandler[method](req);
+      if (routeHandler[method]) {
+        return routeHandler[method](req);
+      }
     }
 
-    return new Response("Nada encontrado", { status: 404 });
+    return new Response("Nada encontrado", {
+      headers: {
+        ...CORSHeaders,
+      },
+      status: 404,
+    });
   },
 });
 

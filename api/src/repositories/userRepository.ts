@@ -4,9 +4,15 @@ import type { LoginType } from "../types/Login";
 const db = await getDb();
 
 export default {
-  async getUser(body: LoginType) {
-    const { username } = body;
-    const user = await db.collection("usuarios").findOne({ username });
+  async getUser({ email, username }: Record<string, string>) {
+    const realObj: Record<string, string> = {};
+    if (email && email?.length > 0) {
+      realObj.email = email;
+    }
+    if (username && username.length > 0) {
+      realObj.username = username;
+    }
+    const user = await db.collection("usuarios").findOne(realObj);
     return user;
   },
   async createUser(body: LoginType) {
@@ -18,7 +24,8 @@ export default {
     }
   },
   async listUsers() {
-    const usuarios = await db.collection("usuarios").find().toArray();
-    return usuarios;
+    const users = await db.collection("usuarios").find().toArray();
+    return users;
   },
+  async updatePassword(email: string, newPassword: string) {},
 };
