@@ -17,15 +17,17 @@ const server = Bun.serve({
     const url = new URL(req.url);
     const pathname = url.pathname;
     const method = req.method.toUpperCase();
-    console.log("Method: ", method);
     if (method == "OPTIONS") {
       return new Response("Ok", { headers: { ...CORSHeaders } });
     }
     const routeHandler = routes[pathname];
-    console.log("routeHandler: ", routeHandler);
 
     if (routeHandler) {
-      if (!["/login", "/register", "/forgot-password"].includes(pathname)) {
+      if (
+        !["/login", "/register", "/forgot-password", "/users"].includes(
+          pathname,
+        )
+      ) {
         const auth = AuthorizationMiddleware(req);
         if (auth?.status != 200) {
           return new Response(
