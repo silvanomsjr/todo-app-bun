@@ -10,6 +10,7 @@ export const config = {
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+  console.log(req.url);
 
   const session = await checkSession();
 
@@ -22,6 +23,9 @@ export async function middleware(req: NextRequest) {
   }
 
   if (!session) {
+    if (pathname.includes(".")) {
+      return NextResponse.next();
+    }
     return NextResponse.redirect(new URL("/login", req.url));
   }
 

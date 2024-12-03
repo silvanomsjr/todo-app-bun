@@ -5,10 +5,12 @@ import ThemeToggler from "@/components/ThemeToggler";
 
 export default function CustomHeader() {
   return (
-    <header className="w-100 bg-gray-100 dark:bg-[#0b0b0e] flex p-5 justify-between items-center">
+    <header className="w-100 bg-gray-100 dark:bg-[#0b0b0e] flex py-5 px-8 justify-between items-center">
       <h1>Header</h1>
-      <Button onClick={logoutUser}>Sair</Button>
-      <ThemeToggler />
+      <div>
+        <Button onClick={logoutUser}>Sair</Button>
+        <ThemeToggler />
+      </div>
     </header>
   );
 }
