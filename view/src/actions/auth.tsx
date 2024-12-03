@@ -1,7 +1,7 @@
 "use server";
 import { z, ZodTypeAny } from "zod";
-import { isEmail } from "@/app/lib/utils";
-import { decrypt, createSession } from "@/app/lib/session";
+import { isEmail } from "@/lib/utils";
+import { checkSession, createSession, deleteSession } from "@/lib/session";
 import { redirect } from "next/navigation";
 
 export async function authenticateUser(form: z.infer<ZodTypeAny>) {
@@ -18,12 +18,22 @@ export async function authenticateUser(form: z.infer<ZodTypeAny>) {
     method: "POST",
     body: JSON.stringify(realObj),
   });
-  const { data } = await response.json();
+  const actualResponse = await response.json();
+  const { data, error } = actualResponse;
   if (data) {
-    decrypt(data);
     await createSession(data);
     redirect("/");
   }
-  console.log("faio")
-  return { success: false };
+  return { success: false, error };
+}
+
+export async function logoutUser() {
+  const session = await checkSession();
+  if (session) {
+    const deleting = await deleteSession();
+    if (deleting == null) {
+      redirect("/login");
+    }
+  }
+  return;
 }

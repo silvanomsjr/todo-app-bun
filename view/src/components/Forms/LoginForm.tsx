@@ -3,7 +3,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-import { isEmail, isUsername } from "@/app/lib/utils";
+import { isEmail, isUsername } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -15,8 +16,9 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { LogIn } from "lucide-react";
 
-import { authenticateUser } from "@/app/actions/auth";
+import { authenticateUser } from "@/actions/auth";
 
 const FormSchema = z
   .object({
@@ -51,10 +53,23 @@ export default function CustomForm() {
     },
   });
 
+  const { toast } = useToast();
+
+  async function onSubmitForm(data: z.infer<typeof FormSchema>) {
+    const { success, error } = await authenticateUser(data);
+    if (!success) {
+      toast({
+        title: "Erro",
+        description: error,
+        variant: "destructive",
+      });
+    }
+  }
+
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit(authenticateUser)}
+        onSubmit={form.handleSubmit(onSubmitForm)}
         className="w-full max-w-96 space-y-6"
       >
         <FormField
@@ -75,15 +90,18 @@ export default function CustomForm() {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>"Senha"</FormLabel>
+              <FormLabel>Senha</FormLabel>
               <FormControl>
-                <Input type="password" {...field} />
+                <Input type="password" autoComplete="password" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-        <Button type="submit">Entrar</Button>
+        <Button type="submit">
+          Entrar
+          <LogIn />
+        </Button>
       </form>
     </Form>
   );
