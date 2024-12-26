@@ -15,6 +15,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { registerNewUser } from "@/actions/registerUser";
+import { redirect } from "next/navigation";
 
 const FormSchema = z.object({
   username: z
@@ -28,7 +30,7 @@ const FormSchema = z.object({
     message: "A senha deve conter no mínimo 5 caracteres.",
   }),
 });
-export default function InputForm() {
+export default function CreateAccountForm() {
   const { toast } = useToast();
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -40,22 +42,30 @@ export default function InputForm() {
   });
 
   async function onSubmit(data: z.infer<typeof FormSchema>) {
-    if (data?.email && data?.password && data?.password) {
-      const result = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/register`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(data),
-        },
-      );
-      console.log("result: ", result);
+    const { success, error } = await registerNewUser(data);
+    if (!success) {
+      const messages: {
+        username: string;
+        email: string;
+        form: string;
+      } = {
+        username: "Username já está em uso",
+        email: "Já existe uma conta com esse email",
+        form: "Preencha todos os campos",
+      };
+      const key = Object.keys(error)[0];
       toast({
-        title: "Login realizado",
+        title: "Erro",
+        description: messages[key as keyof typeof messages],
+        variant: "destructive",
       });
     }
+
+    toast({
+      title: "Sucesso",
+      description: "Conta criada com sucesso!",
+    });
+    return redirect("/");
   }
 
   return (

@@ -3,6 +3,19 @@ import { cookies } from "next/headers";
 import { jwtVerify } from "jose";
 import { RequestCookie } from "next/dist/compiled/@edge-runtime/cookies";
 
+type jwtPayload = {
+  payload: {
+    exp: number;
+    iat: number;
+    user: {
+      email: string;
+      password: string;
+      username: string;
+      id: string;
+    };
+  };
+};
+
 export async function validateToken(token: string) {
   if (process.env.SECRET_JWT) {
     // return jwt.verify(token, process.env.SECRET_JWT);
@@ -27,19 +40,19 @@ export async function createSession(token: string) {
   });
 }
 
-export async function checkSession(): Promise<RequestCookie | undefined> {
+export async function checkSession(): Promise<RequestCookie | null> {
   const serverCookies = await cookies();
   const sessionCookies = serverCookies.get("session");
 
   if (sessionCookies) {
     const valid = await validateToken(sessionCookies?.value);
     if (!valid) {
-      return undefined;
+      return null;
     }
     return sessionCookies;
   }
 
-  return undefined;
+  return null;
 }
 
 export async function deleteSession() {
@@ -47,6 +60,19 @@ export async function deleteSession() {
     (await cookies()).delete("session");
   } catch (err) {
     return err;
+  }
+  return null;
+}
+
+export async function getSessionUsername(): Promise<string | null> {
+  const serverCookies = (await cookies()).get("session");
+  const secretKey = new TextEncoder().encode(process.env.SECRET_JWT);
+  if (serverCookies?.value) {
+    const { payload }: jwtPayload = await jwtVerify(
+      serverCookies.value,
+      secretKey,
+    );
+    return payload?.user?.username;
   }
   return null;
 }

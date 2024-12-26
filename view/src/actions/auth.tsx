@@ -18,8 +18,7 @@ export async function authenticateUser(form: z.infer<ZodTypeAny>) {
     method: "POST",
     body: JSON.stringify(realObj),
   });
-  const actualResponse = await response.json();
-  const { data, error } = actualResponse;
+  const { data, error } = await response.json();
   if (data) {
     await createSession(data);
     redirect("/");

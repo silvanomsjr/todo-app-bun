@@ -18,7 +18,7 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL("/", req.url));
   }
 
-  if (pathname == "/login" && !session) {
+  if (["/login", "/create-account"].includes(pathname) && !session) {
     return NextResponse.next();
   }
 

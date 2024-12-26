@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { LogIn } from "lucide-react";
 
 import { authenticateUser } from "@/actions/auth";
+import Link from "next/link";
 
 const FormSchema = z
   .object({
@@ -98,10 +99,15 @@ export default function CustomForm() {
             </FormItem>
           )}
         />
-        <Button type="submit">
-          Entrar
-          <LogIn />
-        </Button>
+        <div className="flex gap-5 flex-col justify-content items-start">
+          <Link className="text-sm" href="/create-account">
+            Criar conta
+          </Link>
+          <Button type="submit">
+            Entrar
+            <LogIn />
+          </Button>
+        </div>
       </form>
     </Form>
   );

@@ -4,7 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
 import CustomHeader from "@/components/CustomHeader";
-import { checkSession } from "@/lib/session";
+import { checkSession, getSessionUsername } from "@/lib/session";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -28,12 +28,13 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const session = await checkSession();
+  const username = await getSessionUsername();
 
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          {session && <CustomHeader />}
+          {session && <CustomHeader username={username} />}
           {children}
           <Toaster />
         </ThemeProvider>

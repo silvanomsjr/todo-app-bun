@@ -1,6 +1,6 @@
 import userRepo from "../repositories/userRepository";
 import bcrypt from "bcrypt";
-import { validateFields, sendMail } from "../utils";
+import { validateFields, sendMail, customResponse } from "../utils";
 import jwt from "jsonwebtoken";
 
 export default {
@@ -8,32 +8,20 @@ export default {
     const userParams = await req.json();
 
     if (!userParams?.username && !userParams?.email) {
-      return new Response(
-        JSON.stringify({
-          error: "É necessário email ou username para a autenticação",
-        }),
+      return customResponse(
         {
-          headers: {
-            "Access-Control-Allow-Headers": "*",
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-            "Content-Type": "application/json",
-          },
+          error: "É necessário email ou username para a autenticação",
+        },
+        {
           status: 400,
         },
       );
     }
 
     if (!userParams?.password) {
-      return new Response(
-        JSON.stringify({ error: "É necessário inserir a senha" }),
+      return customResponse(
+        { error: "É necessário inserir a senha" },
         {
-          headers: {
-            "Access-Control-Allow-Headers": "*",
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-            "Content-Type": "application/json",
-          },
           status: 400,
         },
       );
@@ -50,15 +38,9 @@ export default {
 
     const user = await userRepo.getUser(getUserBy);
     if (!user) {
-      return new Response(
-        JSON.stringify({ error: "Usuário não existe no sistema!" }),
+      return customResponse(
+        { error: "Usuário não existe no sistema!" },
         {
-          headers: {
-            "Access-Control-Allow-Headers": "*",
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-            "Content-Type": "application/json",
-          },
           status: 404,
         },
       );
@@ -74,41 +56,29 @@ export default {
         const token = jwt.sign({ user }, process.env.SECRET_JWT, {
           expiresIn: "1h",
         });
-        return new Response(JSON.stringify({ data: token }), {
-          headers: {
-            "Access-Control-Allow-Headers": "*",
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-            "Content-Type": "application/json",
+        return customResponse(
+          { data: token },
+          {
+            status: 202,
           },
-          status: 202,
-        });
+        );
       }
-      return new Response(
-        JSON.stringify({
-          error: "SECRET_JWT não foi encontrado",
-        }),
+      return customResponse(
         {
-          headers: {
-            "Access-Control-Allow-Headers": "*",
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-            "Content-Type": "application/json",
-          },
+          error: "SECRET_JWT não foi encontrado",
+        },
+        {
           status: 404,
         },
       );
     }
 
-    return new Response(JSON.stringify({ error: "Senha incorreta" }), {
-      headers: {
-        "Access-Control-Allow-Headers": "*",
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-        "Content-Type": "application/json",
+    return customResponse(
+      { error: "Senha incorreta" },
+      {
+        status: 400,
       },
-      status: 400,
-    });
+    );
   },
   async register(req: Request) {
     const { email, username, password } = await req.json();
@@ -120,13 +90,7 @@ export default {
     });
 
     if (fieldsValidation.length > 0) {
-      return new Response(JSON.stringify(fieldsValidation), {
-        headers: {
-          "Access-Control-Allow-Headers": "*",
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-          "Content-Type": "application/json",
-        },
+      return customResponse(fieldsValidation, {
         status: 400,
       });
     }
@@ -142,35 +106,20 @@ export default {
     });
 
     if (result?.errorResponse) {
-      return new Response(JSON.stringify(result), {
-        headers: {
-          "Access-Control-Allow-Headers": "*",
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-          "Content-Type": "application/json",
-        },
+      return customResponse(result, {
         status: 400,
       });
     }
-    return new Response(JSON.stringify({ data: "Criado com sucesso" }), {
-      headers: {
-        "Access-Control-Allow-Headers": "*",
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-        "Content-Type": "application/json",
+    return customResponse(
+      { data: "Criado com sucesso" },
+      {
+        status: 200,
       },
-      status: 200,
-    });
+    );
   },
   async getUsers() {
     const users = await userRepo.listUsers();
-    return new Response(JSON.stringify(users), {
-      headers: {
-        "Access-Control-Allow-Headers": "*",
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-        "Content-Type": "application/json",
-      },
+    return customResponse(users, {
       status: 200,
     });
   },
@@ -178,17 +127,11 @@ export default {
     const { email } = await req.json();
 
     if (!email) {
-      return new Response(
-        JSON.stringify({
-          error: "Email é necessário para recuperação de senha",
-        }),
+      return customResponse(
         {
-          headers: {
-            "Access-Control-Allow-Headers": "*",
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-            "Content-Type": "application/json",
-          },
+          error: "Email é necessário para recuperação de senha",
+        },
+        {
           status: 400,
         },
       );
@@ -196,29 +139,17 @@ export default {
 
     const user = await userRepo.getUser({ email });
     if (!user) {
-      return new Response(
-        JSON.stringify({ error: "Esse email não possui conta" }),
+      return customResponse(
+        { error: "Esse email não possui conta" },
         {
-          headers: {
-            "Access-Control-Allow-Headers": "*",
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-            "Content-Type": "application/json",
-          },
           status: 400,
         },
       );
     }
     if (!process.env.SECRET_JWT) {
-      return new Response(
-        JSON.stringify({ error: "SECRET_JWT não está definido" }),
+      return customResponse(
+        { error: "SECRET_JWT não está definido" },
         {
-          headers: {
-            "Access-Control-Allow-Headers": "*",
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-            "Content-Type": "application/json",
-          },
           status: 403,
         },
       );
@@ -236,37 +167,23 @@ export default {
       mailMessage,
     );
 
-    return new Response(JSON.stringify(result), {
-      headers: {
-        "Access-Control-Allow-Headers": "*",
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-        "Content-Type": "application/json",
-      },
+    return customResponse(result, {
       status: result?.error ? 500 : 200,
     });
   },
   async resetPassword(req: Request) {
     const { token, newPassword } = await req.json();
     if (!token || !newPassword) {
-      return new Response(
-        JSON.stringify({
-          error: "Token ou password não estão presentes no body",
-        }),
-      );
+      return customResponse({
+        error: "Token ou password não estão presentes no body",
+      });
     }
 
     try {
       if (!process.env.SECRET_JWT) {
-        return new Response(
-          JSON.stringify({ error: "SECRET_JWT não está definido" }),
+        return customResponse(
+          { error: "SECRET_JWT não está definido" },
           {
-            headers: {
-              "Access-Control-Allow-Headers": "*",
-              "Access-Control-Allow-Origin": "*",
-              "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-              "Content-Type": "application/json",
-            },
             status: 403,
           },
         );
